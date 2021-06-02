@@ -8,6 +8,7 @@ const PORT = 3001
 const app = express();
 const redis = require('redis')
 
+
 // Redis connection
 const client = redis.createClient({
     host: "localhost",
@@ -16,6 +17,10 @@ const client = redis.createClient({
 client.on("error", (error) => {
     console.log(error)
 })
+
+module.exports = {
+    client,
+}
 
 
 // Socket connection ...

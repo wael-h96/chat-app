@@ -2,23 +2,24 @@ const express = require('express')
 const router = express.Router()
 const userDB = require('./userSchema')
 const wsHandler = require("../webSocket")
-const client = require('../server')
+const { client } = require('../server')
 
 
 router.get('/', async (req, res) => {//fetches all the users
     try {
-        
-        // Redis 
-        // client.get("users", async (err, users) => {
-        //     if (users) {
-        //         res.send(users)
-        //     } else {
-        //         console.log("got here")
-        //     }
-        // })
 
-        const allUsers = await userDB.find()
-        res.send(allUsers)
+        client.get("allUsers", async (err, users) => {
+            if (users) {//means that users are found in redis
+                console.log(users)
+                res.send(users)
+            }
+            else {
+                console.log("not found")
+                const allUsers = await userDB.find()
+                client.setex("allUsers", 60, JSON.stringify(allUsers))
+                res.send(allUsers)
+            }
+        })
 
     } catch (error) {
 
@@ -35,6 +36,8 @@ router.post('/login', async (req, res) => {
         if (ifUserAlreadyExists.length === 0) {//means that the user not exists
 
             const dbResponse = await userDB.insertMany([{ email, online: true }])
+            const allUsers = await userDB.find()
+            client.setex("allUsers", 60, JSON.stringify(allUsers))
         } else {
 
             await userDB.updateOne({ email }, { $set: { online: true } })
@@ -42,6 +45,7 @@ router.post('/login', async (req, res) => {
 
         const user = await userDB.find({ email })
         wsHandler.notifyUser("users-list-update")
+
         res.json(user)
 
     } catch (error) {
