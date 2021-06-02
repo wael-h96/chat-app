@@ -1,0 +1,29 @@
+.leftPane{
+    display: flex;
+    flex-direction: column;
+}
+
+.leftPane-header{
+    display: flex;
+    padding: 20px;
+    border-right: 1px solid lightgray;
+}
+
+.leftPane-chats{
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-users{
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    border: 1px solid black;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+.sidebar-users:hover{
+    box-shadow: -1px 4px 20px -6px rgba(0,0,0);
+}
+

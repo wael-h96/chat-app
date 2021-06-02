@@ -9,13 +9,13 @@ const app = express();
 const redis = require('redis')
 
 //Redis connection
-const client = redis.createClient({
-    host: "localhost",
-    port: 6379,//default port
-})
-client.on("error", (error) => {
-    console.log(error)
-})
+// const client = redis.createClient({
+//     host: "localhost",
+//     port: 6379,//default port
+// })
+// client.on("error", (error) => {
+//     console.log(error)
+// })
 
 
 // Socket connection ...
@@ -29,7 +29,7 @@ app.use(morgan('tiny'))
 app.use(bodyParser.json())
 app.use("/api", require('./apiRouter'))
 
-module.exports = client
+
 
 // mongodb connection
 mongoose.connect(
