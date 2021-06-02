@@ -8,14 +8,14 @@ const PORT = 3001
 const app = express();
 const redis = require('redis')
 
-//Redis connection
-// const client = redis.createClient({
-//     host: "localhost",
-//     port: 6379,//default port
-// })
-// client.on("error", (error) => {
-//     console.log(error)
-// })
+// Redis connection
+const client = redis.createClient({
+    host: "localhost",
+    port: 6379,//default port
+})
+client.on("error", (error) => {
+    console.log(error)
+})
 
 
 // Socket connection ...
