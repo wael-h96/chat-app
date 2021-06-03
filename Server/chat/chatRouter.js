@@ -3,6 +3,7 @@ const router = express.Router()
 const chatDB = require('./chatSchema')
 const userDB = require('../users/userSchema')
 const ws = require('../webSocket')
+const { client } = require('../server')
 
 router.post('/', async (req, res) => {
     const { newMessage, user1, user2 } = req.body
@@ -12,7 +13,9 @@ router.post('/', async (req, res) => {
 
         if (findCommonChat.length != 0) {//if there is already a chat between the two users
             await chatDB.updateOne({ chatId: findCommonChat[0] }, { $push: { messages: newMessage } })
-
+            const chat = await chatDB.find({ chatId: findCommonChat[0] })
+            client.setex(JSON.stringify(findCommonChat[0]), 60, JSON.stringify(chat[0].messages))
+            
         } else {//in case that there is no prev chat
             const chatDBResponse = await chatDB.insertMany({ user1, user2 })
             const chatId = chatDBResponse[0]._id
@@ -29,17 +32,29 @@ router.post('/', async (req, res) => {
 })
 
 router.get('/get-chat/:user1/:user2', async (req, res) => {
-    console.log("got here")
+
     const user1 = req.params.user1
     const user2 = req.params.user2
-    console.log(user1, user2)
+
     try {
         const findCommonChat = await getUsersCommonChat(user1, user2)
-        console.log(findCommonChat)
-        if (findCommonChat.length !== 0) {
-            const chat = await chatDB.find({ chatId: findCommonChat[0] })
-            res.json(chat[0].messages)
-        } else {
+
+        if (findCommonChat.length !== 0) {//There is a prev chat
+
+            client.get(JSON.stringify(findCommonChat[0]), async (err, prevChat) => {
+
+                if (prevChat) {
+                    res.send(JSON.parse(prevChat))
+                    console.log(prevChat)
+
+                } else {
+                    const chat = await chatDB.find({ chatId: findCommonChat[0] })
+                    client.setex(JSON.stringify(findCommonChat[0]), 60, JSON.stringify(chat[0].messages))
+                    res.json(chat[0].messages)
+                }
+            })
+
+        } else {//No prev chat so empty array is returned
             res.json([])
         }
 
